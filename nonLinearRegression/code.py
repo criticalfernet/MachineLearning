@@ -2,80 +2,64 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def predict(x,w,b):
-   return np.dot(x,w) + b
+def normalize_features(X):
+    x_norm = X
+    myu = np.mean(X[:, 1:], axis=0)
+    sigma = np.std(X[:, 1:], axis=0)
+    x_norm[:, 1:] = (X[:, 1:] - myu) / sigma
+    return x_norm
 
-def cost_function(x,w,b,y):
+
+def transform_polynomial_features(X,degree):
+    X = np.array(X).flatten()
+    m = X.shape[0]
+    X_poly = np.ones((m, degree + 1))
+    for d in range(1, degree + 1):
+        X_poly[:, d] = X ** d
+    return X_poly
+
+
+def find_cost(X,y,theta):
     m = len(y)
-    y_hat = predict(x,w,b)
-    cost = (1 / (2 * m)) * np.sum((y_hat - y) ** 2)
+    predictions = X.dot(theta)
+    errors = predictions - y
+    cost = (1 / (2 * m)) * np.dot(errors, errors)
     return cost
-#
-def find_gradient(x,y,w,b):
+
+
+def gradient_descent(X, y, theta, alpha, num):
     m = len(y)
-    y_hat = predict(x,w,b)
-    error = y_hat - y
-    dw = (1/m)*np.dot(x.T,error)
-    db = (1/m)*np.sum(error)
-    return dw, db
+    for i in range(num):
+        predictions = X.dot(theta)
+        errors = predictions - y
+        gradients = (1 / m) * X.T.dot(errors)
+        theta -= alpha * gradients
+    return theta
 
-def gradient_descend(x,y,w1,b1,alpha,n_iter):
-    w = w1
-    b = b1
-    cost_history = []
-
-    for i in range(n_iter):
-        dw, db = find_gradient(x,y,w,b)
-        w -= alpha*dw
-        b -= alpha*db
-
-        cost = cost_function(x,w,b,y)
-        cost_history.append(cost)
-
-    return w,b,cost_history
 
 data: pd.DataFrame = pd.read_csv('non-linear.csv')
 
 x = data[['x']].values
 y = data['y'].values
+degree = 5
+x_poly = transform_polynomial_features(x,degree)
+x_norm = normalize_features(x_poly)
 
-w = [0.0]
-b = 0.0
+theta = np.zeros(degree + 1)
 
-w,b,cost_h = gradient_descend(x,y,w,b,0.001,50)
+cost = find_cost(x_norm,y,theta)
+print("{:.2f}".format(cost))
 
-#plt.plot(range(50), cost_h)
-#plt.xlabel('Iterations')
-#plt.ylabel('Cost')
-#plt.title('Gradient Descent Progress')
-#plt.show()
+theta = gradient_descent(x_norm,y,theta,0.01,1000)
 
-print(w,b)
+cost = find_cost(x_norm,y,theta)
+print("{:.2f}".format(cost))
 
-plt.plot(x,y)
-x_ran = np.linspace(x.min(),x.max(),100)
-plt.plot(x_ran,np.dot(x_ran,w[0])+b,'r')
+
+x_range = np.linspace(min(x), max(x), 100000)
+x_r_poly = transform_polynomial_features(x_range,degree)
+x_r_norm = normalize_features(x_r_poly)
+plt.plot(x, y)
+plt.plot(x_range, x_r_norm.dot(theta), color='red')
 plt.show()
-
-
-
-#cost = cost_function(x_train, y_train, w, b)
-#print('Initial cost: {:.2f}'.format(cost))
-#
-#w,b = gradient_descend(x_train,y_train,w,b,0.01,50000)
-#
-#cost = cost_function(x_train, y_train, w, b)
-#print('Optimized cost: {:.2f}'.format(cost))
-#
-#x_predictions = np.linspace(x_train.min(), x_train.max(), 100)
-#y_predictions = predict(x_predictions,w,b)
-#
-#
-#test_predictions_table = pd.DataFrame({
-#    'Economy': x_test.flatten(),
-#    'Test Score': y_test.flatten(),
-#    'Predicted Score': predict(x_test.flatten(),w,b).flatten(),
-#})
-#
-#print(test_predictions_table.head(10))
 
