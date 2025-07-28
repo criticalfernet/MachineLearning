@@ -37,10 +37,10 @@ def gradient_descent(X, y, theta, alpha, num):
     return theta
 
 
-data: pd.DataFrame = pd.read_csv('non-linear.csv')
+data: pd.DataFrame = pd.read_csv('temp-data.txt',sep='\t')
 
-x = data[['x']].values
-y = data['y'].values
+x = data[['time']].values
+y = data['temp'].values
 degree = 15
 x_poly = transform_polynomial_features(x,degree)
 x_norm = normalize_features(x_poly)
@@ -59,7 +59,7 @@ print("{:.2f}".format(cost))
 x_range = np.linspace(min(x), max(x), 1000)
 x_r_poly = transform_polynomial_features(x_range,degree)
 x_r_norm = normalize_features(x_r_poly)
-plt.plot(x, y)
-plt.plot(x_range, x_r_norm.dot(theta), color='red')
+plt.scatter(x, y,color="#8fb457",marker='o',s=20)
+plt.plot(x_range, x_r_norm.dot(theta), color='black',lw=3)
 plt.show()
 
