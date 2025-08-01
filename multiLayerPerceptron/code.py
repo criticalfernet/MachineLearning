@@ -5,6 +5,30 @@ data = pd.read_csv('mnist-demo.csv').head(5000)
 
 train_y = data["label"].to_numpy()
 train_x = data.drop(columns=["label"]).to_numpy()
+train_x = train_x/255
+
+class MultiLayerPerceptron:
+    def __init__(self,data,labels,layers):
+        self.data = data
+        self.labels = labels
+        self.layers = layers
+        self.weights = self.init_weights(layers)
+
+    def init_weights(self,layers):
+        num_layers = len(layers)
+        weights = {}
+        for i in range(num_layers-1):
+            n_in = layers[i]
+            n_out = layers[i+1]
+            weights[i] = np.random.randn(n_out,n_in+1)*0.01
+        return weights
+
+    def forward(self,data,layers,weights):
+        num_layers = len(layers)
+        num_examples = data.shape[0]
+
+        
+
 
 def relu(x):
     return np.maximum(0, x)
@@ -89,7 +113,7 @@ def one_hot_encode(y, num_classes=10):
 
 
 
-X = train_x /255
+X = train_x
 y = train_y
 
 y_onehot = one_hot_encode(y)
